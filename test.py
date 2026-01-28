@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 
 
 class Square(tk.Label):
+    mouseClicked = set()
 
     def __init__(self, root, pImage, x, y):
         self.x = x
@@ -13,14 +14,28 @@ class Square(tk.Label):
 
 
     def clicked(self, e):
-        with open("runs.txt", "a") as f:
-            f.write(f"Square at {self.x}, {self.y} has been clicked.\n")
-        f.close()
+        Square.mouseClicked.add(e.num)
+        if not self.checkIfBothMouseButtonsPressed():
+            with open("runs.txt", "a") as f:
+                f.write(f"Square at {self.x}, {self.y} has been clicked.\n")
+            f.close()
 
     def released(self, e):
-        with open("runs.txt", "a") as f:
-            f.write(f"Square at {self.x}, {self.y} has been released.\n")
-        f.close()
+        Square.mouseClicked.remove(e.num)
+        if not self.checkIfBothMouseButtonsPressed():
+            with open("runs.txt", "a") as f:
+                f.write(f"Square at {self.x}, {self.y} has been released.\n")
+            f.close()
+
+
+
+    def checkIfBothMouseButtonsPressed(self):
+        if 1 in Square.mouseClicked and 3 in Square.mouseClicked:
+            with open("runs.txt", "a") as f:
+                f.write(f"Square at {self.x}, {self.y} has been left and right clicked.\n")
+            f.close()
+            return True
+        return False
 
 #Try to include binds for left+right click. Write the result in runs.txt
 
@@ -29,6 +44,8 @@ class Square(tk.Label):
     def bindAll(self):
         self.bind("<ButtonPress-1>", self.clicked)
         self.bind("<ButtonRelease-1>", self.released)
+        self.bind("<ButtonPress-3>", self.clicked)
+        self.bind("<ButtonRelease-3>", self.released)
 
 root = tk.Tk()
 root.title("Square Click Test")
@@ -48,7 +65,9 @@ for column in range(3):
 f = open("runs.txt", "r")
 
 
-
+with open("runs.txt", "a") as f:
+    f.write(f"New Run\n")
+f.close()
 
 
 
