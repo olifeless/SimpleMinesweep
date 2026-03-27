@@ -131,7 +131,6 @@ class Square(Sprites):
                 self.__img = ImageTk.PhotoImage(self.__img)
                 self.config(image=self.__img)
             elif event != 0: #Revealed square AND triggered by actual mouse button clicking
-                # Remove unessasary recursion by checking if this was executed by a previous stack.
                 self.__event.scan(x=self.__xCoord, y=self.__yCoord, mines= self.__adjMines)
                 
     
