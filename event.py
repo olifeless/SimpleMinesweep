@@ -14,7 +14,7 @@ class EventManager():
         self.__flagCounter = []
         self.__face = None
         self.__pressedKeys = set()
-        self.__clicked = set()
+        self.__clicked = set() #Not in use, was going to use to check which mouse buttons are currently held down
         self.__scan = False
         self.__totalMines = 0
         self.__mX = x
@@ -107,23 +107,24 @@ class EventManager():
         self.__face.completed()
         for i in self.__squares:
             for sq in self.__squares[i]:
-                if not sq.__getFlagged():
-                    if not sq.__getMines():
+                if not sq.getFlagged():
+                    if not sq.getMines():
                         raise Exception("Shouldve ended but theres still clear space unrevealed")
                     else:
-                        sq.__flag()
+                        sq.flag()
 
-    def scan(self, e, x, y, mines):
+    def scan(self, x, y, mines):
         a = 0
-        print("test")
         for i in range(-1, 2):
             for j in range(-1, 2):
-                if self.__squares[x][y].getFlagged():
-                    a += 1
+                if 0 <= x+i < self.__mX and 0 <= y+j < self.__mY:
+                    if self.__squares[x+i][y+j].getFlagged():
+                        a += 1
         if a == mines:
             for i in range(-1, 2):
                 for j in range(-1, 2):
-                    self.__squares[x][y].clicked()
+                    if 0 <= x+i <= self.__mX and 0 <= y+j <= self.__mY:
+                        self.__squares[x+i][y+j].clicked(0)
 
 
     def onPressed(self, e, x, y): #Not in use

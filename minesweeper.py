@@ -18,7 +18,7 @@ task: Make the first click have no adjacent mines: (Remove mines in a 3x3 grid a
 task: Make a reset button
 task: Death (Unbind all actions, reveal all other squares)
 ctask: when middle click/ left&right click reveal a 3x3 square around it (if remaining mines = 0 then reveal others)
-task: Top bar: emoji 
+task: Top bar: emoji (done)
 task: top bar: timer(done)
 task: top bar: flagCount (done)
 task: menu

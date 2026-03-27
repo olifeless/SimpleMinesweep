@@ -38,7 +38,7 @@ class RedNum(Sprites):
         super().__init__(root=root, pImage =RedNum.sprite[0])
     
 class Square(Sprites):
-    unrevealed = 0 #Number of SAFE squares not revealed, game ends when it hits 0
+    UNREVEALED = 0 #Number of SAFE squares not revealed, game ends when it hits 0
 
     def __init__(self, root, x, y, event):
         self.__img = Image.open("sprites/blank.png").resize((32, 32), Image.NEAREST)
@@ -53,7 +53,7 @@ class Square(Sprites):
         self.__safe = False #if it is within "spawn" so no mines can be here
         self.__event = event #event manager
         self.__event.registerSq(self, x, y)
-        Square.unrevealed += 1
+        Square.UNREVEALED += 1
         #If a new boolean/variable is added, remember to reset it in reset()
 
     def until_I_Can_Think_Of_Other_Solutions_This_Is_The_Only_Way(self):
@@ -66,7 +66,6 @@ class Square(Sprites):
         # self.bind("<ButtonRelease>", lambda e: self.__event.onReleased(e,self.__xCoord, self.__yCoord))
         self.bind("<Button-1>", self.clicked)
         self.bind("<Button-3>", self.flag)
-        self.bind("<space>", lambda e: self.__event.scan(e, x=self.__xCoord, y=self.__yCoord, mines= self.__adjMines)) #Doesnt work, as a sprite doesnt get focus from the keyboard. Only works with mouse buttons
         #Think of a way to get rid of the the fixMines bind
         
     def getState(self): return self.__revealed
@@ -96,47 +95,54 @@ class Square(Sprites):
     def removeMine(self):
         self.__mines = False
         self.__safe = True
-        Square.unrevealed += 1
+        Square.UNREVEALED += 1
 
     def setMineState(self):
         if not self.__mines and not self.__safe:
             self.__mines = True
-            Square.unrevealed -= 1
+            Square.UNREVEALED -= 1
             return True
         return False
 
     def clicked(self, event=0):
         if not self.__flagged:
-            self.__revealed = True
-            if self.__mines:
-                self.__img = Image.open("sprites/red_mine.png").resize((32, 32), Image.NEAREST)
-                self.__event.death()
-            else:
-                Square.unrevealed -= 1
-                if not Square.unrevealed:
-                    self.__event.completed()
-                match self.__adjMines:
-                    case 0: 
-                        self.__img = Image.open("sprites/0.png").resize((32, 32), Image.NEAREST)
-                        self.__event.checkNeighbour(self.__xCoord, self.__yCoord)
-                    case 1: self.__img = Image.open("sprites/1.png").resize((32, 32), Image.NEAREST)
-                    case 2: self.__img = Image.open("sprites/2.png").resize((32, 32), Image.NEAREST)
-                    case 3: self.__img = Image.open("sprites/3.png").resize((32, 32), Image.NEAREST)
-                    case 4: self.__img = Image.open("sprites/4.png").resize((32, 32), Image.NEAREST)
-                    case 5: self.__img = Image.open("sprites/5.png").resize((32, 32), Image.NEAREST)
-                    case 6: self.__img = Image.open("sprites/6.png").resize((32, 32), Image.NEAREST)
-                    case 7: self.__img = Image.open("sprites/7.png").resize((32, 32), Image.NEAREST)
-                    case 8: self.__img = Image.open("sprites/8.png").resize((32, 32), Image.NEAREST)
-                    case _: self.__img = Image.open("sprites/dead.png").resize((32, 32), Image.NEAREST)
-            self.__img = ImageTk.PhotoImage(self.__img)
-            self.config(image=self.__img)
+            if not self.__revealed:
+                self.__revealed = True
+                if self.__mines:
+                    self.__img = Image.open("sprites/red_mine.png").resize((32, 32), Image.NEAREST)
+                    self.__event.death()
+                else:
+                    Square.UNREVEALED -= 1
+                    if not Square.UNREVEALED:
+                        self.__event.completed()
+                    match self.__adjMines:
+                        case 0: 
+                            self.__img = Image.open("sprites/0.png").resize((32, 32), Image.NEAREST)
+                            self.__event.checkNeighbour(self.__xCoord, self.__yCoord)
+                        case 1: self.__img = Image.open("sprites/1.png").resize((32, 32), Image.NEAREST)
+                        case 2: self.__img = Image.open("sprites/2.png").resize((32, 32), Image.NEAREST)
+                        case 3: self.__img = Image.open("sprites/3.png").resize((32, 32), Image.NEAREST)
+                        case 4: self.__img = Image.open("sprites/4.png").resize((32, 32), Image.NEAREST)
+                        case 5: self.__img = Image.open("sprites/5.png").resize((32, 32), Image.NEAREST)
+                        case 6: self.__img = Image.open("sprites/6.png").resize((32, 32), Image.NEAREST)
+                        case 7: self.__img = Image.open("sprites/7.png").resize((32, 32), Image.NEAREST)
+                        case 8: self.__img = Image.open("sprites/8.png").resize((32, 32), Image.NEAREST)
+                        case _: self.__img = Image.open("sprites/dead.png").resize((32, 32), Image.NEAREST)
+                self.__img = ImageTk.PhotoImage(self.__img)
+                self.config(image=self.__img)
+            elif event != 0: #Revealed square AND triggered by actual mouse button clicking
+                # Remove unessasary recursion by checking if this was executed by a previous stack.
+                self.__event.scan(x=self.__xCoord, y=self.__yCoord, mines= self.__adjMines)
+                
     
     def reset(self):
         self.__img = Image.open("sprites/blank.png").resize((32, 32), Image.NEAREST)
         self.__img = ImageTk.PhotoImage(self.__img)
         self.config(image=self.__img)
-        self.__revealed = False
-        self.__mines = False
+        if self.__revealed or self.__mines:
+            self.__revealed = False
+            Square.UNREVEALED += 1
+            self.__mines = False
         self.__flagged = False
         self.__adjMines = 0
         self.__safe = False
